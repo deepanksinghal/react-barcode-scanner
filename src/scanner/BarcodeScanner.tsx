@@ -1,13 +1,11 @@
 import React, { useRef, useLayoutEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import ZXing from './lib/zxing_reader';
+import { scanBarcode, cropVideo } from './scanner';
 
 interface ScannerProps {
-  onScan: Function;
+  onSuccess: Function;
+  active: boolean;
 }
-
-let zxing: any;
-ZXing().then((instance: any) => (zxing = instance));
 
 const useStyles = makeStyles({
   root: {
@@ -65,7 +63,7 @@ const useStyles = makeStyles({
   },
 });
 
-const BarcodeScanner: React.FC<ScannerProps> = ({ onScan }) => {
+const BarcodeScanner: React.FC<ScannerProps> = ({ onSuccess, active }) => {
   const scannerRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const laserBoxRef = useRef<HTMLDivElement>(null);
@@ -75,7 +73,7 @@ const BarcodeScanner: React.FC<ScannerProps> = ({ onScan }) => {
     async function init() {
       const video = scannerRef.current;
 
-      if (video) {
+      if (video && active) {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: {
             facingMode: 'environment',
@@ -91,66 +89,37 @@ const BarcodeScanner: React.FC<ScannerProps> = ({ onScan }) => {
     init();
   });
 
-  function scanBarcode(canvasElement: HTMLCanvasElement, format: string) {
-    var imgWidth = canvasElement.width;
-    var imgHeight = canvasElement.height;
-    var imageData = canvasElement
-      .getContext('2d')!
-      .getImageData(0, 0, imgWidth, imgHeight);
-    var sourceBuffer = imageData.data;
-
-    var buffer = zxing._malloc(sourceBuffer.byteLength);
-    zxing.HEAPU8.set(sourceBuffer, buffer);
-    var result = zxing.readBarcodeFromPixmap(
-      buffer,
-      imgWidth,
-      imgHeight,
-      true,
-      format
-    );
-    zxing._free(buffer);
-    return result;
-  }
-
   const tick = () => {
     if (!canvasRef.current || !scannerRef.current) {
       return;
     }
     if (scannerRef.current.readyState === scannerRef.current.HAVE_ENOUGH_DATA) {
-      canvasRef.current.height = scannerRef.current.videoHeight * 0.095;
-      canvasRef.current.width = scannerRef.current.videoWidth * 0.7125;
-
-      const xOffset = scannerRef.current.videoWidth * 0.139;
-      const yOffset = scannerRef.current.videoHeight * 0.4525;
-      const croppedWidth = scannerRef.current.videoWidth * 0.7125;
-      const croppedHeight = scannerRef.current.videoHeight * 0.095;
+      const croppedVideo = cropVideo(scannerRef.current);
+      canvasRef.current.height = croppedVideo.height;
+      canvasRef.current.width = croppedVideo.width;
 
       const canvas = canvasRef.current.getContext('2d');
       canvas!.drawImage(
         scannerRef.current,
-        xOffset,
-        yOffset,
-        croppedWidth,
-        croppedHeight,
+        croppedVideo.xOffset,
+        croppedVideo.yOffset,
+        croppedVideo.width,
+        croppedVideo.height,
         0,
         0,
-        croppedWidth,
-        croppedHeight
+        croppedVideo.width,
+        croppedVideo.height
       );
 
-      const code = scanBarcode(canvasRef.current, 'CODE_39');
-      if (code.error) {
-        console.log(code);
-      } else if (code.format) {
-        console.log(code);
-      } else {
-        // console.log(code);
+      const code = scanBarcode(canvasRef.current);
+      if (code.format) {
+        onSuccess();
       }
     }
     requestAnimationFrame(tick);
   };
 
-  return (
+  return active ? (
     <div className={classes.container}>
       <canvas ref={canvasRef} className={classes.canvas} hidden></canvas>
       <video
@@ -168,7 +137,7 @@ const BarcodeScanner: React.FC<ScannerProps> = ({ onScan }) => {
         ></img>
       </div>
     </div>
-  );
+  ) : null;
 };
 
 export default BarcodeScanner;

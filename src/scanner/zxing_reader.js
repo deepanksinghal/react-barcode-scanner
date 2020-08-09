@@ -1,6 +1,6 @@
 /* eslint-disable */
 var ZXing = (function() {
-  var _scriptDir = '/js/zxing_reader.wasm'
+  var _scriptDir = '/wasm/zxing_reader.wasm'
   
   return (
 function(ZXing) {
