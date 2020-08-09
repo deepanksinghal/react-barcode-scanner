@@ -14,6 +14,7 @@ export type BarcodeResult = {
 
 export function scanBarcode(
   canvasElement: HTMLCanvasElement,
+  tryHarder: boolean,
   ignoreDuplicateCodeTime: number
 ) {
   const imgWidth = canvasElement.width;
@@ -29,7 +30,7 @@ export function scanBarcode(
     buffer,
     imgWidth,
     imgHeight,
-    true,
+    tryHarder,
     barcodeSymbologies
   );
   zxing._free(buffer);

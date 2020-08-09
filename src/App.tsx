@@ -7,6 +7,7 @@ function App() {
     <BarcodeScanner
       onSuccess={(barcode: BarcodeResult) => console.log(barcode)}
       active={true}
+      tryHarder={false}
     />
   );
 }

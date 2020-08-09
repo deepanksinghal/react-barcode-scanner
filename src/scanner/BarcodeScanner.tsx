@@ -5,6 +5,7 @@ import { scanBarcode, cropVideo } from './scanner';
 interface ScannerProps {
   onSuccess: Function;
   active: boolean;
+  tryHarder?: boolean;
   ignoreDuplicateCode?: number;
 }
 
@@ -66,6 +67,7 @@ const useStyles = makeStyles({
 const BarcodeScanner: React.FC<ScannerProps> = ({
   onSuccess,
   active,
+  tryHarder = false,
   ignoreDuplicateCode = 0,
 }) => {
   const scannerRef = useRef<HTMLVideoElement>(null);
@@ -114,7 +116,11 @@ const BarcodeScanner: React.FC<ScannerProps> = ({
         croppedVideo.width,
         croppedVideo.height
       );
-      const code = scanBarcode(canvasRef.current, ignoreDuplicateCode);
+      const code = scanBarcode(
+        canvasRef.current,
+        tryHarder,
+        ignoreDuplicateCode
+      );
       if (code.format) {
         onSuccess(code);
       }
