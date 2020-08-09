@@ -6,7 +6,16 @@ ZXing().then((instance: any) => (zxing = instance));
 
 const barcodeSymbologies = 'EAN_13|EAN_8|CODE_39|CODE_93|CODE_128|UPC_A|UPC_E';
 
-export function scanBarcode(canvasElement: HTMLCanvasElement) {
+export type BarcodeResult = {
+  error: string;
+  format: string;
+  text: string;
+};
+
+export function scanBarcode(
+  canvasElement: HTMLCanvasElement,
+  ignoreDuplicateCodeTime: number
+) {
   const imgWidth = canvasElement.width;
   const imgHeight = canvasElement.height;
   const imageData = canvasElement
@@ -16,7 +25,7 @@ export function scanBarcode(canvasElement: HTMLCanvasElement) {
 
   const buffer = zxing._malloc(sourceBuffer.byteLength);
   zxing.HEAPU8.set(sourceBuffer, buffer);
-  const result = zxing.readBarcodeFromPixmap(
+  const result: BarcodeResult = zxing.readBarcodeFromPixmap(
     buffer,
     imgWidth,
     imgHeight,
