@@ -65,14 +65,13 @@ const BarcodeScanner: React.FC<ScannerProps> = ({
   tryHarder = false,
   ignoreDuplicateCode = 0,
 }) => {
-  const scannerRef = useRef<HTMLVideoElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const laserBoxRef = useRef<HTMLDivElement>(null);
   const classes = useStyles();
 
   useLayoutEffect(() => {
     async function init() {
-      const video = scannerRef.current;
+      const video = videoRef.current;
 
       if (video && active) {
         const stream = await navigator.mediaDevices.getUserMedia({
@@ -91,17 +90,17 @@ const BarcodeScanner: React.FC<ScannerProps> = ({
   });
 
   const tick = () => {
-    if (!canvasRef.current || !scannerRef.current) {
+    if (!canvasRef.current || !videoRef.current) {
       return;
     }
-    if (scannerRef.current.readyState === scannerRef.current.HAVE_ENOUGH_DATA) {
-      const croppedVideo = cropVideo(scannerRef.current);
+    if (videoRef.current.readyState === videoRef.current.HAVE_ENOUGH_DATA) {
+      const croppedVideo = cropVideo(videoRef.current);
       canvasRef.current.height = croppedVideo.height;
       canvasRef.current.width = croppedVideo.width;
 
       const canvas = canvasRef.current.getContext('2d');
       canvas!.drawImage(
-        scannerRef.current,
+        videoRef.current,
         croppedVideo.xOffset,
         croppedVideo.yOffset,
         croppedVideo.width,
@@ -126,13 +125,13 @@ const BarcodeScanner: React.FC<ScannerProps> = ({
     <div className={classes.container}>
       <canvas ref={canvasRef} className={classes.canvas} hidden></canvas>
       <video
-        ref={scannerRef}
+        ref={videoRef}
         muted
         autoPlay
         playsInline
         className={classes.scanVideo}
       ></video>
-      <div ref={laserBoxRef} className={classes.laserBox}>
+      <div className={classes.laserBox}>
         <img
           src="/assets/laser.png"
           alt="laser"
