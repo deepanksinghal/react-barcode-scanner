@@ -1,6 +1,6 @@
 import React, { useRef, useLayoutEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { scanBarcode, cropVideo } from './scanner';
+import { scanBarcode, cropVideo, isDuplicate } from './scanner';
 
 interface ScannerProps {
   onSuccess: Function;
@@ -120,7 +120,7 @@ const BarcodeScanner: React.FC<ScannerProps> = ({
         canvas!.getImageData(0, 0, croppedVideo.width, croppedVideo.height),
         tryHarder
       );
-      if (code.format) {
+      if (code.format && !isDuplicate(code.text, ignoreDuplicateCode)) {
         onSuccess(code);
       }
     }

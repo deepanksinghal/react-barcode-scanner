@@ -8,6 +8,7 @@ function App() {
       onSuccess={(barcode: BarcodeResult) => console.log(barcode)}
       active={true}
       tryHarder={false}
+      ignoreDuplicateCode={5000}
     />
   );
 }

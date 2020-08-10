@@ -5,6 +5,7 @@ let zxing: any;
 ZXing().then((instance: any) => (zxing = instance));
 
 const barcodeSymbologies = 'EAN_13|EAN_8|CODE_39|CODE_93|CODE_128|UPC_A|UPC_E';
+const filterBarcodesMap = new Map<string, number>();
 
 export type BarcodeResult = {
   error: string;
@@ -26,6 +27,26 @@ export function scanBarcode(imageData: ImageData, tryHarder: boolean) {
   );
   zxing._free(buffer);
   return result;
+}
+
+export function isDuplicate(
+  barcode: string,
+  intervalInMilliSecs: number
+): boolean {
+  if (
+    filterBarcodesMap.has(barcode) &&
+    new Date().getTime() - filterBarcodesMap.get(barcode)! <=
+      intervalInMilliSecs
+  ) {
+    return true;
+  }
+
+  return addNewBarcode(barcode);
+}
+
+function addNewBarcode(barcode: string): boolean {
+  filterBarcodesMap.set(barcode, new Date().getTime());
+  return false;
 }
 
 export function cropVideo(videoElement: HTMLVideoElement) {
