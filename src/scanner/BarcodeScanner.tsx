@@ -43,11 +43,6 @@ const useStyles = makeStyles({
     width: '71.25%',
     top: '45.25%',
     height: '9.5%',
-
-    // left: `${(0.025 + 0.12 * 0.95) * 100}%`,
-    // width: `${0.75 * 0.95 * 100}%`,
-    // top: `${(0.025 + 0.4 * 0.95) * 100}%`,
-    // height: `${0.1 * 0.95 * 100}%`,
   },
   laserImg: {
     position: 'absolute',
