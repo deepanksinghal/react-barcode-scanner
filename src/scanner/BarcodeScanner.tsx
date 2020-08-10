@@ -1,4 +1,4 @@
-import React, { useRef, useLayoutEffect } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { scanBarcode, cropVideo, isDuplicate } from './scanner';
 
@@ -28,7 +28,8 @@ const useStyles = makeStyles({
     height: '100%',
     position: 'relative',
     display: 'block',
-    transform: `scale(-1,1)`,
+    // transform: `scale(-1,1)`,
+    // WebkitTransform: `scale(-1,1)`,
     objectFit: 'cover',
   },
   laserBox: {
@@ -55,7 +56,8 @@ const useStyles = makeStyles({
     position: 'absolute',
     boxSizing: 'border-box',
     border: '1px solid red',
-    transform: `translateZ(0) scale(-1,1)`,
+    // transform: `translateZ(0) scale(-1,1)`,
+    // WebkitTransform: `translateZ(0) scale(-1,1)`,
   },
 });
 
@@ -69,27 +71,7 @@ const BarcodeScanner: React.FC<ScannerProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const classes = useStyles();
 
-  useLayoutEffect(() => {
-    async function init() {
-      const video = videoRef.current;
-
-      if (video && active) {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: 'environment',
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-          },
-        });
-
-        video.srcObject = stream;
-        requestAnimationFrame(tick);
-      }
-    }
-    init();
-  });
-
-  const tick = () => {
+  const tick = useCallback(() => {
     if (!canvasRef.current || !videoRef.current) {
       return;
     }
@@ -114,14 +96,53 @@ const BarcodeScanner: React.FC<ScannerProps> = ({
         canvas!.getImageData(0, 0, croppedVideo.width, croppedVideo.height),
         tryHarder
       );
-      if (code.format && !isDuplicate(code.text, ignoreDuplicateCode)) {
+      if (
+        code.format &&
+        (ignoreDuplicateCode === 0 ||
+          !isDuplicate(code.text, ignoreDuplicateCode))
+      ) {
         onSuccess(code);
       }
     }
-    requestAnimationFrame(tick);
-  };
+    if (active) {
+      requestAnimationFrame(tick);
+    }
+  }, [ignoreDuplicateCode, onSuccess, tryHarder, active]);
 
-  return active ? (
+  useEffect(() => {
+    const videoElement = videoRef.current;
+    async function init() {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: 'environment',
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        },
+      });
+      if (videoElement) {
+        videoElement.srcObject = stream;
+        requestAnimationFrame(tick);
+      }
+    }
+    if (active && videoElement && !videoElement.srcObject) {
+      init();
+    } else {
+      return function cleanup() {
+        if (videoElement) {
+          const stream = videoElement.srcObject;
+          if (stream) {
+            const tracks = (stream as MediaStream).getTracks();
+            tracks.forEach(function (track) {
+              track.stop();
+            });
+            videoElement.srcObject = null;
+          }
+        }
+      };
+    }
+  }, [active, tick]);
+
+  return (
     <div className={classes.container}>
       <canvas ref={canvasRef} className={classes.canvas} hidden></canvas>
       <video
@@ -139,7 +160,7 @@ const BarcodeScanner: React.FC<ScannerProps> = ({
         ></img>
       </div>
     </div>
-  ) : null;
+  );
 };
 
 export default BarcodeScanner;
