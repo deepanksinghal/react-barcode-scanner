@@ -117,9 +117,8 @@ const BarcodeScanner: React.FC<ScannerProps> = ({
         croppedVideo.height
       );
       const code = scanBarcode(
-        canvasRef.current,
-        tryHarder,
-        ignoreDuplicateCode
+        canvas!.getImageData(0, 0, croppedVideo.width, croppedVideo.height),
+        tryHarder
       );
       if (code.format) {
         onSuccess(code);

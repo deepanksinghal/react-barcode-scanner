@@ -12,24 +12,15 @@ export type BarcodeResult = {
   text: string;
 };
 
-export function scanBarcode(
-  canvasElement: HTMLCanvasElement,
-  tryHarder: boolean,
-  ignoreDuplicateCodeTime: number
-) {
-  const imgWidth = canvasElement.width;
-  const imgHeight = canvasElement.height;
-  const imageData = canvasElement
-    .getContext('2d')!
-    .getImageData(0, 0, imgWidth, imgHeight);
+export function scanBarcode(imageData: ImageData, tryHarder: boolean) {
   const sourceBuffer = imageData.data;
 
   const buffer = zxing._malloc(sourceBuffer.byteLength);
   zxing.HEAPU8.set(sourceBuffer, buffer);
   const result: BarcodeResult = zxing.readBarcodeFromPixmap(
     buffer,
-    imgWidth,
-    imgHeight,
+    imageData.width,
+    imageData.height,
     tryHarder,
     barcodeSymbologies
   );
