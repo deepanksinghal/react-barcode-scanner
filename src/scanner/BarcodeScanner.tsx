@@ -1,6 +1,6 @@
-import React, { useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useCallback, useLayoutEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { scanBarcode, cropVideo, isDuplicate } from './scanner';
+import { scanBarcode, cropVideo, isDuplicate, beepSound } from './scanner';
 
 interface ScannerProps {
   onSuccess: Function;
@@ -56,6 +56,7 @@ const useStyles = makeStyles({
     position: 'absolute',
     boxSizing: 'border-box',
     border: '1px solid red',
+    transform: `translateZ(0)`,
     // transform: `translateZ(0) scale(-1,1)`,
     // WebkitTransform: `translateZ(0) scale(-1,1)`,
   },
@@ -101,6 +102,7 @@ const BarcodeScanner: React.FC<ScannerProps> = ({
         (ignoreDuplicateCode === 0 ||
           !isDuplicate(code.text, ignoreDuplicateCode))
       ) {
+        beepSound.play();
         onSuccess(code);
       }
     }
@@ -109,7 +111,7 @@ const BarcodeScanner: React.FC<ScannerProps> = ({
     }
   }, [ignoreDuplicateCode, onSuccess, tryHarder, active]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const videoElement = videoRef.current;
     async function init() {
       const stream = await navigator.mediaDevices.getUserMedia({

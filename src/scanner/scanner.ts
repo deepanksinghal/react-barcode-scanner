@@ -51,7 +51,7 @@ function addNewBarcode(barcode: string): boolean {
 
 export function cropVideo(videoElement: HTMLVideoElement) {
   const xOffset = videoElement.videoWidth * 0.139;
-  const yOffset = videoElement.videoHeight * 0.4525;
+  const yOffset = videoElement.videoHeight * 0.4;
   const width = videoElement.videoWidth * 0.7125;
   const height = videoElement.videoHeight * 0.095;
 
