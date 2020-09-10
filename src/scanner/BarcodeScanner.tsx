@@ -42,7 +42,7 @@ const useStyles = makeStyles({
     alignItems: 'center',
     left: '13.9%',
     width: '71.25%',
-    top: '54.75%',
+    top: '45.25%',
     height: '9.5%',
   },
   laserImg: {
